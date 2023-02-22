@@ -41,19 +41,17 @@ for ii = num_Diri + 1 : num_Diri + num_Neum
             % Search the location of each line element
             node_sum = N_IEN(1, temp) + N_IEN(2, temp);
             node_diff = abs(N_IEN(1, temp) - N_IEN(2, temp));
-            % Compare 'node1 + node2' and '|node1 - node2|' to a test matrix
-            for kk = 1 : msh.nbTriangles
-                test_matrix = zeros(3,2);
-                test_matrix(1, 1) = Plane_IEN(2, kk) + Plane_IEN(3, kk);
-                test_matrix(1, 2) = abs(Plane_IEN(2, kk) - Plane_IEN(3, kk));
-                test_matrix(2, 1) = Plane_IEN(1, kk) + Plane_IEN(3, kk);
-                test_matrix(2, 2) = abs(Plane_IEN(1, kk) - Plane_IEN(3, kk));
-                test_matrix(3, 1) = Plane_IEN(1, kk) + Plane_IEN(2, kk);
-                test_matrix(3, 2) = abs(Plane_IEN(1, kk) - Plane_IEN(2, kk));
-                
+            % Compare 'node1 + node2' and '|node1 - node2|' respectively
+            for kk = 1 : msh.nbTriangles       
                 for ll = 1 : 3
-                    if test_matrix(ll, 1) == node_sum
-                        if test_matrix(ll, 2) == node_diff
+                    choices = [1, 2, 3];
+                    choices(ll) = [ ];
+                    sum_test = ...
+                        Plane_IEN(choices(1), kk) + Plane_IEN(choices(2), kk);
+                    if sum_test == node_sum
+                        diff_test = ...
+                            abs(Plane_IEN(choices(1), kk) - Plane_IEN(choices(2), kk));
+                        if diff_test == node_diff
                             N_IEN(3, temp) = kk;
                             % The 'temp'th line element is the boundary of
                             % the 'kk'th triangular element
