@@ -41,7 +41,7 @@ for ii = num_Diri + 1 : num_Diri + num_Neum
             % Search the location of each line element
             node_sum = N_IEN(1, temp) + N_IEN(2, temp);
             node_diff = abs(N_IEN(1, temp) - N_IEN(2, temp));
-            % Compare 'node1 + node2' and '|node1 - node2|'
+            % Compare 'node1 + node2' and '|node1 - node2|' to a test matrix
             for kk = 1 : msh.nbTriangles
                 test_matrix = zeros(3,2);
                 test_matrix(1, 1) = Plane_IEN(2, kk) + Plane_IEN(3, kk);
