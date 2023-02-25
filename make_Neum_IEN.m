@@ -9,7 +9,7 @@ function Neum_IEN = make_Neum_IEN(msh, num_Diri, num_Neum, Plane_IEN)
 %   num_Neum: The number of Neumann boundaries i.e the previous 'n'.
 %   Plane_IEN: The constructed IEN of triangular elements.
 % Output:
-%   Neum_IEN: The IEN matrix of the linear elements on Neumann boundaries
+%   Neum_IEN: The IEN matrix of the line elements on Neumann boundaries
 %               (as a cell).
 %       Neum_IEN{i}: The IEN matrix of the 'i'th Neumann boundary
 %       Neum_IEN{i}(*, e): The 'e'th element.
