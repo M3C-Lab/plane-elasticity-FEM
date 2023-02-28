@@ -1,21 +1,24 @@
-function [qp, wq, nqp] = TriangularQuad(degree)
+function [qp, wq, nqp] = TriangularQuad(degree, p1, p2, p3)
 % To generate Hammer's quadrature info on Page 173 for the default 
 % parent triangle on Page 121 with parent coordinates (xi, eta).
 % Input:
 %   degree: The degree of precision.
+%   p1,p2,p3: The coordinates of the nodes of the parent triangle.
 % Output:
 %   qp: The coodinates in the parameter space (xi, eta).
+%       qp(*, e): The 'e'th quadrature points.
+%       qp(1, *): The 'xi' coordinate.
+%       qp(2, *): The 'eta' coordinate.
 %   wq: The quadrature weight.
+%       wq(e): The weight of the 'e'th quadrature point.
 %   nqp: The number of quadrature points.
 
 % !!!!!! Note: We will make the number of quadrature points (nqp) as little 
-%   as possible. The available groups are:
+%   as possible. The available choices are:
 %   (nqp, degree) = 
 %   (3, 2)  (4, 3)  (6, 4)  (7, 5)  (12, 6) (13, 7)
 % !!!!!! Note:  The triangular coordinates (r, s, t) would be mapped into
 %   parameter coodinates(xi, eta)
-% The nodes of the default parent triangle:
-% p1:(-1, -1)   p2:(1, -1)  p3:(0, 1)
 
 if degree == 2
     nqp = 3;
@@ -177,9 +180,6 @@ end
 
 % Map qp into (xi,eta) space.
 qp = zeros(2, nqp);
-p1 = [-1,-1]';
-p2 = [1, -1]';
-p3 = [0, 1]';
 
 for kk = 1 : nqp
     qp(1, kk) = p1(1) * triangular_qp(1, kk) + p2(1) * triangular_qp(2, kk)...
