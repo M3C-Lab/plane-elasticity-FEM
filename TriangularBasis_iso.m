@@ -1,7 +1,7 @@
 function poly = TriangularBasis_iso(i, der_xi, der_eta, xi, eta)
 % To get the basis function or the derivative over the linear parent triangle
 % on Page 121. Nodes: p1(-1, -1)   p2(1, -1)   p3(0, 1)
-% These functions are used for isoparametric mapping.
+% These functions are used for isogeometric mapping.
 % Input:
 %   i: the number of the basis function, 1 ~ 3.
 %   der: the derivative required.
