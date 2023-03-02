@@ -12,7 +12,7 @@ f_x = @(x, y) 1; % Body force field of x-component.
 f_y = @(x, y) 1; % Body force field of y-component.
 
 etype = 3; %The type of elements is triangle.
-Quad_degree = 5; % The degree of precision of numerical quadrature.
+Quad_degree = 2; % The degree of precision of numerical quadrature.
 
 % ---------- Preprocess ----------
 Diri_Nodes = make_Diri_Nodes(msh, num_Diri);
@@ -64,6 +64,7 @@ if etype == 3
     
     dof_e = 2 * etype;   % The degree of freedom of the nodes of an element.
     %k_cell = cell(msh.nbTriangles, 1);
+    f_cell = cell(msh.nbTriangles, 1);
     
     for ee = 1 : msh.nbTriangles
         k_ele = zeros(dof_e, dof_e);
@@ -123,13 +124,13 @@ if etype == 3
             for aa = 1 : dof_e
                 node = ceil(aa/2);
                 if mod(aa, 2) ~= 0
-                    f_ele(aa) = f_ele(aa) + J * wq(qua) * ...
+                    f_ele(aa) = f_ele(aa) + wq(qua) * ...
         TriangularBasis(node,0,0,qp(1,qua),qp(2,qua), p1, p2, p3) * ...
         f_x(para2phys(1, 1) * qp(1,qua) + para2phys(1, 2) * qp(2,qua) + para2phys(1, 3),...
             para2phys(2, 1) * qp(1,qua) + para2phys(2, 2) * qp(2,qua) + para2phys(2, 3));
                 else
-                    f_ele(aa) = f_ele(aa) + J * wq(qua) * ...
-        TriangularBasis(node,0,0,qp(1,nqp),qp(2,nqp), p1, p2, p3) * ...
+                    f_ele(aa) = f_ele(aa) + wq(qua) * ...
+        TriangularBasis(node,0,0,qp(1,qua),qp(2,qua), p1, p2, p3) * ...
         f_y(para2phys(1, 1) * qp(1,qua) + para2phys(1, 2) * qp(2,qua) + para2phys(1, 3),...
             para2phys(2, 1) * qp(1,qua) + para2phys(2, 2) * qp(2,qua) + para2phys(2, 3));
                 end
@@ -138,6 +139,7 @@ if etype == 3
         
         %k_ele = B' * D * B;
         %k_cell{ee, 1} = k_ele;
+        f_cell{ee, 1} = f_ele;
         
         for aa = 1 : dof_e
             LM_a = LM_array(aa, ee);
