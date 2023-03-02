@@ -1,7 +1,7 @@
-function poly = TriangularBasis(i, der_x, der_y, x, y)
+function poly = TriangularBasis(i, der_x, der_y, x, y, p1, p2, p3)
 % To get the basis function or the derivative over a triangular element.
 % The value of these basis functions are equivalent to the AREA COORDINATES.
-% The nodes of default parent triangle: p1(0, 0)    p2(1, 0)    p3(0, 1).
+% The nodes of default parent triangle.
 %   You can choose another set of nodes, but this script can only be used
 %   for LINEAR elements, and the nodes should be arranged COUNTERCLOCKWISE.
 % Input:
@@ -14,16 +14,12 @@ function poly = TriangularBasis(i, der_x, der_y, x, y)
 %       (0, 0)  (1, 0)  (0, 1)
 %       If one of the der > 1, 0 would be output since it is a linear element.
 %   x, y: The points position in parent triangle.
+%   p1, p2, p3: The nodes of the parent element.
 % Output:
 %   poly: The value of basis function or derivative.
-% å…³äºç›´è§’åæ ‡ä¸é¢ç§¯åæ ‡çš„è½¬æ¢å…³ç³»ï¼Œå¯å‚çœ‹æ¸…åå¤§å­¦å‡ºç‰ˆç¤¾ã€Šæœ‰é™å•å…ƒæ³•ã€‹ç¬¬106é¡µåŠç¬¬57é¡µã€‚
+% ¹ØÓÚÖ±½Ç×ø±êÓëÃæ»ı×ø±êµÄ×ª»»¹ØÏµ£¬¿É²Î¿´Çå»ª´óÑ§³ö°æÉç¡¶ÓĞÏŞµ¥Ôª·¨¡·µÚ106Ò³¼°µÚ57Ò³¡£
 
-% The nodes of the parent triangular element (adjustable).
-p1 = [0, 0]';
-p2 = [1, 0]';
-p3 = [0, 1]';
-
-% The formulation in Page 57,58 of ã€Šæœ‰é™å•å…ƒæ³•ã€‹.
+% The formulation in Page 57,58 of ¡¶ÓĞÏŞµ¥Ôª·¨¡·.
 a1 = p2(1) * p3(2) - p3(1) * p2(2);
 b1 = p2(2) - p3(2);
 c1 = -p2(1) + p3(1);
