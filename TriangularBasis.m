@@ -1,4 +1,4 @@
-function poly = TriangularBasis_area(i, der_x, der_y, x, y)
+function poly = TriangularBasis(i, der_x, der_y, x, y)
 % To get the basis function or the derivative over a triangular element.
 % The value of these basis functions are equivalent to the AREA COORDINATES.
 % The nodes of default parent triangle: p1(0, 0)    p2(1, 0)    p3(0, 1).
@@ -16,14 +16,14 @@ function poly = TriangularBasis_area(i, der_x, der_y, x, y)
 %   x, y: The points position in parent triangle.
 % Output:
 %   poly: The value of basis function or derivative.
-% ¹ØÓÚÖ±½Ç×ø±êÓëÃæ»ı×ø±êµÄ×ª»»¹ØÏµ£¬¿É²Î¿´Çå»ª´óÑ§³ö°æÉç¡¶ÓĞÏŞµ¥Ôª·¨¡·µÚ106Ò³¼°µÚ57Ò³¡£
+% å…³äºç›´è§’åæ ‡ä¸é¢ç§¯åæ ‡çš„è½¬æ¢å…³ç³»ï¼Œå¯å‚çœ‹æ¸…åå¤§å­¦å‡ºç‰ˆç¤¾ã€Šæœ‰é™å•å…ƒæ³•ã€‹ç¬¬106é¡µåŠç¬¬57é¡µã€‚
 
 % The nodes of the parent triangular element (adjustable).
 p1 = [0, 0]';
 p2 = [1, 0]';
 p3 = [0, 1]';
 
-% The formulation in Page 57,58 of ¡¶ÓĞÏŞµ¥Ôª·¨¡·.
+% The formulation in Page 57,58 of ã€Šæœ‰é™å•å…ƒæ³•ã€‹.
 a1 = p2(1) * p3(2) - p3(1) * p2(2);
 b1 = p2(2) - p3(2);
 c1 = -p2(1) + p3(1);
@@ -44,7 +44,7 @@ if i == 1
     elseif der_x == 0 && der_y == 1
         poly = 0.5 * c1 / A;
     else
-        disp("TriangularBasis_area: Please input appropriate 'der' groups.")
+        disp("TriangularBasis: Please input appropriate 'der' groups.")
     end
     
 elseif i == 2
@@ -55,7 +55,7 @@ elseif i == 2
     elseif der_x == 0 && der_y == 1
         poly = 0.5 * c2 / A;
     else
-        disp("TriangularBasis_area: Please input appropriate 'der' groups.")
+        disp("TriangularBasis: Please input appropriate 'der' groups.")
     end
     
 elseif i == 3
@@ -66,11 +66,11 @@ elseif i == 3
     elseif der_x == 0 && der_y == 1
         poly = 0.5 * c3 / A;
     else
-        disp("TriangularBasis_area: Please input appropriate 'der' groups.")
+        disp("TriangularBasis: Please input appropriate 'der' groups.")
     end
     
 else
-    disp("TriangularBasis_area: Please input appropriate 'i'(the node number).")
+    disp("TriangularBasis: Please input appropriate 'i'(the node number).")
 end
 
 end
