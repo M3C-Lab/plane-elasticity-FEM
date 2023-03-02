@@ -8,9 +8,11 @@ num_Neum = 3;
 
 E = 1.0e5;   % Young's modulus.
 nu = 0.3;   % Poisson's ratio.
+f_x = @(x, y) 1; % Body force field of x-component.
+f_y = @(x, y) 1; % Body force field of y-component.
 
 etype = 3; %The type of elements is triangle.
-Quad_degree = 2; % The degree of precision of numerical quadrature.
+Quad_degree = 5; % The degree of precision of numerical quadrature.
 
 % ---------- Preprocess ----------
 Diri_Nodes = make_Diri_Nodes(msh, num_Diri);
@@ -28,7 +30,7 @@ LM_array = make_LM_array(Plane_IEN, ID_array);
 
 Neum_normalvector = make_normalvector_tri(Neum_IEN, msh.POS);
 
-% ---------- Construct stiffness K ---------- 
+% ---------- Construct stiffness K and load F ---------- 
 
 % The physical equations for plane-strain problem: 考 = D * 汍 .
 % 考 = [考_xx, 考_yy, 而_xy]'
@@ -41,7 +43,7 @@ D = [nu*E/((1+nu)*(1-2*nu))+E/(1+nu), nu*E/(1+nu)/(1-2*nu), 0;
     0, 0, 0.5*E/(1+nu)];
 
 n_eq = ID_array(2, msh.nbNod);  % The number of equations.
-K = sparse(n_eq, n_eq); % The global stiffness matrix K.
+K = zeros(n_eq, n_eq); % The global stiffness matrix K.
 F = zeros(n_eq, 1); % The global load vector F.
 
 if etype == 3
@@ -61,7 +63,7 @@ if etype == 3
     [qp, wq, nqp] = TriangularQuad(Quad_degree, p1, p2, p3);
     
     dof_e = 2 * etype;   % The degree of freedom of the nodes of an element.
-    k_cell = cell(msh.nbTriangles, 1);
+    %k_cell = cell(msh.nbTriangles, 1);
     
     for ee = 1 : msh.nbTriangles
         k_ele = zeros(dof_e, dof_e);
@@ -79,12 +81,12 @@ if etype == 3
         [para2phys,phys2para] = Mapping(n1, n2, n3, p1, p2, p3);
         
         % Jacobian matrix for mapping.
-%         Jacobian_matrix = [para2phys(1, 1), para2phys(1, 2);
-%                            para2phys(2, 1), para2phys(2, 2)];
-%         J = det(Jacobian_matrix);
-% ????? Why we need not J here? ?????
+        Jacobian_matrix = [para2phys(1, 1), para2phys(1, 2);
+                           para2phys(2, 1), para2phys(2, 2)];
+        J = det(Jacobian_matrix);
         
-        B = zeros(3, dof_e);
+        %B = zeros(3, dof_e);
+        
         for qua = 1 : nqp
 % The term in the weak form: 汍(w)' * D * 汍(u)
 %        [d_dx, 0;
@@ -99,12 +101,12 @@ if etype == 3
 %   consider the general differential relations,
 %   and Jacobian J should be multiplied with the infinitesimal volume for
 %   the Integral.
-            dN1_dxi = TriangularBasis(1,1,0,qp(1,nqp),qp(2,nqp), p1, p2, p3);
-            dN2_dxi = TriangularBasis(2,1,0,qp(1,nqp),qp(2,nqp), p1, p2, p3);
-            dN3_dxi = TriangularBasis(3,1,0,qp(1,nqp),qp(2,nqp), p1, p2, p3);
-            dN1_deta = TriangularBasis(1,0,1,qp(1,nqp),qp(2,nqp), p1, p2, p3);
-            dN2_deta = TriangularBasis(2,0,1,qp(1,nqp),qp(2,nqp), p1, p2, p3);
-            dN3_deta = TriangularBasis(3,0,1,qp(1,nqp),qp(2,nqp), p1, p2, p3); 
+            dN1_dxi = TriangularBasis(1,1,0,qp(1,qua),qp(2,qua), p1, p2, p3);
+            dN2_dxi = TriangularBasis(2,1,0,qp(1,qua),qp(2,qua), p1, p2, p3);
+            dN3_dxi = TriangularBasis(3,1,0,qp(1,qua),qp(2,qua), p1, p2, p3);
+            dN1_deta = TriangularBasis(1,0,1,qp(1,qua),qp(2,qua), p1, p2, p3);
+            dN2_deta = TriangularBasis(2,0,1,qp(1,qua),qp(2,qua), p1, p2, p3);
+            dN3_deta = TriangularBasis(3,0,1,qp(1,qua),qp(2,qua), p1, p2, p3); 
             dN1_dx = dN1_dxi * phys2para(1, 1) + dN1_deta * phys2para(2, 1);
             dN2_dx = dN2_dxi * phys2para(1, 1) + dN2_deta * phys2para(2, 1);
             dN3_dx = dN3_dxi * phys2para(1, 1) + dN3_deta * phys2para(2, 1);
@@ -115,12 +117,42 @@ if etype == 3
                     0, dN1_dy, 0, dN2_dy, 0, dN2_dy;
                     dN1_dy, dN1_dx, dN2_dy, dN2_dx, dN3_dy, dN3_dx];
             
-            % k_ele = k_ele + wq(qua) * B_qua' * D * B_qua; 
-            B = B + wq(qua) * B_qua;
+            k_ele = k_ele + wq(qua) * B_qua' * D * B_qua; 
+            %B = B + wq(qua) * B_qua;
+            
+            for aa = 1 : dof_e
+                node = ceil(aa/2);
+                if mod(aa, 2) ~= 0
+                    f_ele(aa) = f_ele(aa) + J * wq(qua) * ...
+        TriangularBasis(node,0,0,qp(1,qua),qp(2,qua), p1, p2, p3) * ...
+        f_x(para2phys(1, 1) * qp(1,qua) + para2phys(1, 2) * qp(2,qua) + para2phys(1, 3),...
+            para2phys(2, 1) * qp(1,qua) + para2phys(2, 2) * qp(2,qua) + para2phys(2, 3));
+                else
+                    f_ele(aa) = f_ele(aa) + J * wq(qua) * ...
+        TriangularBasis(node,0,0,qp(1,nqp),qp(2,nqp), p1, p2, p3) * ...
+        f_y(para2phys(1, 1) * qp(1,qua) + para2phys(1, 2) * qp(2,qua) + para2phys(1, 3),...
+            para2phys(2, 1) * qp(1,qua) + para2phys(2, 2) * qp(2,qua) + para2phys(2, 3));
+                end
+            end
         end
-        k_ele = B' * D * B;
-        k_cell{ee, 1} = k_ele;
-
+        
+        %k_ele = B' * D * B;
+        %k_cell{ee, 1} = k_ele;
+        
+        for aa = 1 : dof_e
+            LM_a = LM_array(aa, ee);
+            if LM_a > 0
+                F(LM_a) = F(LM_a) + f_ele(aa);
+                for bb = 1 : dof_e
+                    LM_b = LM_array(bb, ee);
+                    if LM_b > 0
+                        K(LM_a, LM_b) = K(LM_a, LM_b)+ k_ele(aa, bb);
+                    else
+                        % for Dirichlet
+                    end
+                end
+            end
+        end
       
     end
     
