@@ -1,4 +1,4 @@
-function poly = TriangularBasis(i, der_x, der_y, x, y, p1, p2, p3)
+function poly = TriangularBasis(i, der_x, der_y, x, y, phys2rst)
 % To get the basis function or the derivative over a triangular element.
 % The value of these basis functions are equivalent to the AREA COORDINATES.
 % The nodes of default parent triangle.
@@ -13,54 +13,41 @@ function poly = TriangularBasis(i, der_x, der_y, x, y, p1, p2, p3)
 %       (der_x, der_y) = 
 %       (0, 0)  (1, 0)  (0, 1)
 %       If one of the der > 1, 0 would be output since it is a linear element.
-%   x, y: The points position in parent triangle.
-%   p1, p2, p3: The nodes of the parent element.
+%   x, y: The points position in the triangular element.
+%   phys2rst: The mapping matrix given by Mapping_p2rst.m .
 % Output:
 %   poly: The value of basis function or derivative.
-% 关于直角坐标与面积坐标的转换关系，可参看清华大学出版社《有限单元法》第106页及第57页。
-
-% The formulation in Page 57,58 of 《有限单元法》.
-a1 = p2(1) * p3(2) - p3(1) * p2(2);
-b1 = p2(2) - p3(2);
-c1 = -p2(1) + p3(1);
-a2 = p3(1) * p1(2) - p1(1) * p3(2);
-b2 = p3(2) - p1(2);
-c2 = -p3(1) + p1(1);
-a3 = p1(1) * p2(2) - p2(1) * p1(2);
-b3 = p1(2) - p2(2);
-c3 = -p1(1) + p2(1);
-coeffient_matrix = [1, p1(1), p1(2); 1, p2(1), p2(2); 1, p3(1), p3(2)];
-A = 0.5 * det(coeffient_matrix);
+% 关于直角坐标与面积坐标的转换关系，可参看清华大学出版社《有限单元法》第57页及第106页。
 
 if i == 1
     if der_x == 0 && der_y == 0
-        poly = 0.5 * (a1 + b1 * x + c1 * y) / A;
+        poly = phys2rst(1, 1) * x + phys2rst(1, 2) * y + phys2rst(1, 3);
     elseif der_x == 1 && der_y == 0
-        poly = 0.5 * b1 / A;
+        poly = phys2rst(1, 1);
     elseif der_x == 0 && der_y == 1
-        poly = 0.5 * c1 / A;
+        poly = phys2rst(1, 2);
     else
         disp("TriangularBasis: Please input appropriate 'der' groups.")
     end
     
 elseif i == 2
     if der_x == 0 && der_y == 0
-        poly = 0.5 * (a2 + b2 * x + c2 * y) / A;
+        poly = phys2rst(2, 1) * x + phys2rst(2, 2) * y + phys2rst(2, 3);
     elseif der_x == 1 && der_y == 0
-        poly = 0.5 * b2 / A;
+        poly = phys2rst(2, 1);
     elseif der_x == 0 && der_y == 1
-        poly = 0.5 * c2 / A;
+        poly = phys2rst(2, 2);
     else
         disp("TriangularBasis: Please input appropriate 'der' groups.")
     end
     
 elseif i == 3
     if der_x == 0 && der_y == 0
-        poly = 0.5 * (a3 + b3 * x + c3 * y) / A;
+        poly = phys2rst(3, 1) * x + phys2rst(3, 2) * y + phys2rst(3, 3);
     elseif der_x == 1 && der_y == 0
-        poly = 0.5 * b3 / A;
+        poly = phys2rst(3, 1);
     elseif der_x == 0 && der_y == 1
-        poly = 0.5 * c3 / A;
+        poly = phys2rst(3, 2);
     else
         disp("TriangularBasis: Please input appropriate 'der' groups.")
     end
