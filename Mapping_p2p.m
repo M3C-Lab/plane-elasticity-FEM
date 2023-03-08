@@ -1,4 +1,4 @@
-function [para2phys,phys2para] = Mapping(n1, n2, n3, p1, p2, p3)
+function [para2phys,phys2para] = Mapping_p2p(n1, n2, n3, p1, p2, p3)
 % To get mapping matrice between the physical space and parametric space.
 % Input:
 %   n1, n2, n3: The points in the physical space.
