@@ -87,7 +87,7 @@ D = [nu*E/((1+nu)*(1-2*nu))+E/(1+nu), nu*E/(1+nu)/(1-2*nu), 0;
     0, 0, 0.5*E/(1+nu)];
 
 n_eq = ID_array(2, msh.nbNod);  % The number of equations.
-K = zeros(n_eq, n_eq); % The global stiffness matrix K.
+K = sparse(n_eq, n_eq); % The global stiffness matrix K.
 F = zeros(n_eq, 1); % The global load vector F.
 
     
@@ -262,23 +262,28 @@ toc;
 tic;
 disp('5) Postprocess');
 
-strain = zeros(3, msh.nbNod); % [¦Å_xx, ¦Å_yy, ¦Ã_xy]' of the node.
-counter = zeros(1, msh.nbNod); 
-% To count how many elements contain this node. 
+strain_node = zeros(3, msh.nbNod); % [¦Å_xx, ¦Å_yy, ¦Ã_xy]' of the node.
+stress_node = zeros(3, msh.nbNod); % [¦Ò_xx, ¦Ò_yy, ¦Ó_xy]' of the node.
+
+counter_node = zeros(1, msh.nbNod);
+% To count how many elements contain this node.
 
 % Interior sampling.
-% nbSampling = 4; % The number of sampling points in each element.
-% totalSampling = nbSampling * (msh.nbElm - msh.nbLines);    
-% 
-% X_Sampling = zeros(totalSampling, 1);
-% Y_Sampling = zeros(totalSampling, 1); % [x, y]
-% 
-% d_x_Sampling = zeros(totalSampling, 1);
-% d_y_Sampling = zeros(totalSampling, 1);   % [d_x, d_y]
-% 
-% strain_Sampling = zeros(3, totalSampling); % [¦Å_xx, ¦Å_yy, ¦Ã_xy]'
-% 
-% rng('shuffle');
+% If sample: {
+nbSampling = 10; % The number of sampling points in each element.
+totalSampling = nbSampling * (msh.nbElm - msh.nbLines);    
+
+X_Sampling = zeros(totalSampling, 1);
+Y_Sampling = zeros(totalSampling, 1); % [x, y]
+
+strain_Sampling = zeros(1, totalSampling); % [¦Å_xx, ¦Å_yy, ¦Ã_xy]'
+
+d_x_Sampling = zeros(totalSampling, 1);
+d_y_Sampling = zeros(totalSampling, 1);   % [d_x, d_y]
+% }
+
+
+rng('shuffle');
 for ee = 1 : msh.nbElm - msh.nbLines
     p1 = [msh.POS(Plane_IEN(1, ee), 1), msh.POS(Plane_IEN(1, ee), 2)]';
     p2 = [msh.POS(Plane_IEN(2, ee), 1), msh.POS(Plane_IEN(2, ee), 2)]';
@@ -292,7 +297,7 @@ for ee = 1 : msh.nbElm - msh.nbLines
              trial_solution(2*Plane_IEN(2, ee));
              trial_solution(2*Plane_IEN(3, ee) - 1);
              trial_solution(2*Plane_IEN(3, ee))];
-  
+
     for nn = 1 : 3
         node_x = msh.POS(Plane_IEN(nn, ee), 1);
         node_y = msh.POS(Plane_IEN(nn, ee), 2);
@@ -309,84 +314,98 @@ for ee = 1 : msh.nbElm - msh.nbLines
               
         epsilon_node = B_node * d_ele;
         
-        strain(1, Plane_IEN(nn, ee)) = strain(1, Plane_IEN(nn, ee)) + ...
+        strain_node(1, Plane_IEN(nn, ee)) = strain_node(1, Plane_IEN(nn, ee)) + ...
             epsilon_node(1);
-        strain(2, Plane_IEN(nn, ee)) = strain(2, Plane_IEN(nn, ee)) + ...
+        strain_node(2, Plane_IEN(nn, ee)) = strain_node(2, Plane_IEN(nn, ee)) + ...
             epsilon_node(2);
-        strain(3, Plane_IEN(nn, ee)) = strain(3, Plane_IEN(nn, ee)) + ...
+        strain_node(3, Plane_IEN(nn, ee)) = strain_node(3, Plane_IEN(nn, ee)) + ...
             epsilon_node(3);
-        counter(Plane_IEN(nn, ee)) = counter(Plane_IEN(nn, ee)) + 1;
+        
+        sigma_node = D * epsilon_node;
+        
+        stress_node(1, Plane_IEN(nn, ee)) = stress_node(1, Plane_IEN(nn, ee)) + ...
+            sigma_node(1);
+        stress_node(2, Plane_IEN(nn, ee)) = stress_node(2, Plane_IEN(nn, ee)) + ...
+            sigma_node(2);
+        stress_node(3, Plane_IEN(nn, ee)) = stress_node(3, Plane_IEN(nn, ee)) + ...
+            sigma_node(3);
+        
+        counter_node(Plane_IEN(nn, ee)) = counter_node(Plane_IEN(nn, ee)) + 1;
     end
     
-%     temp = 1;
-%     for ss = 1 : nbSampling
-%         sampling = Random_tricoor();
-%         
-%         samp_x = sampling(1) * p1(1) + sampling(2) * p2(1) + sampling(3) * p3(1);
-%         samp_y = sampling(1) * p1(2) + sampling(2) * p2(2) + sampling(3) * p3(2);
-%         X_Sampling(nbSampling*(ee-1) + temp) = samp_x;
-%         Y_Sampling(nbSampling*(ee-1) + temp) = samp_y;
-%         
-%         samp_d_x = sampling(1) * d_ele(1) + sampling(2) * d_ele(3) + ...
-%                    sampling(3) * d_ele(5);
-%         samp_d_y = sampling(1) * d_ele(2) + sampling(2) * d_ele(4) + ...
-%                    sampling(3) * d_ele(6);        
-%         d_x_Sampling(nbSampling*(ee-1) + temp) = samp_d_x;
-%         d_y_Sampling(nbSampling*(ee-1) + temp) = samp_d_y;
-%         
-%         dN1_dx = TriangularBasis(1, 1, 0, samp_x, samp_y, phys2rst);
-%         dN2_dx = TriangularBasis(2, 1, 0, samp_x, samp_y, phys2rst);
-%         dN3_dx = TriangularBasis(3, 1, 0, samp_x, samp_y, phys2rst);
-%         dN1_dy = TriangularBasis(1, 0, 1, samp_x, samp_y, phys2rst);
-%         dN2_dy = TriangularBasis(2, 0, 1, samp_x, samp_y, phys2rst);
-%         dN3_dy = TriangularBasis(3, 0, 1, samp_x, samp_y, phys2rst); 
-%         B_samp = [dN1_dx, 0, dN2_dx, 0, dN3_dx, 0;
-%                  0, dN1_dy, 0, dN2_dy, 0, dN2_dy;
-%                  dN1_dy, dN1_dx, dN2_dy, dN2_dx, dN3_dy, dN3_dx];
-%         
-%         epsilon_samp = B_samp * d_ele;
-%         strain_Sampling(1, nbSampling*(ee-1) + temp) = epsilon_samp(1);
-%         strain_Sampling(2, nbSampling*(ee-1) + temp) = epsilon_samp(2);
-%         strain_Sampling(3, nbSampling*(ee-1) + temp) = epsilon_samp(3);
-%         
-%         temp = temp + 1;
-%     end
+    % If sample: {
+    temp = 1;
+    for ss = 1 : nbSampling
+        sampling = Random_tricoor();
+        
+        samp_x = sampling(1) * p1(1) + sampling(2) * p2(1) + sampling(3) * p3(1);
+        samp_y = sampling(1) * p1(2) + sampling(2) * p2(2) + sampling(3) * p3(2);
+        X_Sampling(nbSampling*(ee-1) + temp) = samp_x;
+        Y_Sampling(nbSampling*(ee-1) + temp) = samp_y;
+        
+        samp_d_x = sampling(1) * d_ele(1) + sampling(2) * d_ele(3) + ...
+                   sampling(3) * d_ele(5);
+        samp_d_y = sampling(1) * d_ele(2) + sampling(2) * d_ele(4) + ...
+                   sampling(3) * d_ele(6);        
+        d_x_Sampling(nbSampling*(ee-1) + temp) = samp_d_x;
+        d_y_Sampling(nbSampling*(ee-1) + temp) = samp_d_y;
+        
+        dN1_dx = TriangularBasis(1, 1, 0, samp_x, samp_y, phys2rst);
+        dN2_dx = TriangularBasis(2, 1, 0, samp_x, samp_y, phys2rst);
+        dN3_dx = TriangularBasis(3, 1, 0, samp_x, samp_y, phys2rst);
+        dN1_dy = TriangularBasis(1, 0, 1, samp_x, samp_y, phys2rst);
+        dN2_dy = TriangularBasis(2, 0, 1, samp_x, samp_y, phys2rst);
+        dN3_dy = TriangularBasis(3, 0, 1, samp_x, samp_y, phys2rst); 
+        B_samp = [dN1_dx, 0, dN2_dx, 0, dN3_dx, 0;
+                 0, dN1_dy, 0, dN2_dy, 0, dN2_dy;
+                 dN1_dy, dN1_dx, dN2_dy, dN2_dx, dN3_dy, dN3_dx];
+        
+        epsilon_samp = B_samp * d_ele;
+        strain_Sampling(1, nbSampling*(ee-1) + temp) = epsilon_samp(1);
+        strain_Sampling(2, nbSampling*(ee-1) + temp) = epsilon_samp(2);
+        strain_Sampling(3, nbSampling*(ee-1) + temp) = epsilon_samp(3);
+        
+        temp = temp + 1;
+    end
+    % }
     
 end
 
 for nn = 1 : msh.nbNod
-    strain(:, nn) = strain(:, nn) ./ counter(nn);
+    strain_node(:, nn) = strain_node(:, nn) ./ counter_node(nn);
+    stress_node(:, nn) = stress_node(:, nn) ./ counter_node(nn);
 end
 
-stress = D * strain;
-% stress_Sampling = D * strain_Sampling;
+% If sample :
+stress_Sampling = D * strain_Sampling;
 
 % For using patch function conveniently.
-strain = strain'; % [¦Å_xx, ¦Å_yy, ¦Ã_xy]
-stress = stress'; % [¦Ò_xx, ¦Ò_yy, ¦Ó_xy]
-% strain_Sampling = strain_Sampling';
-% stress_Sampling = stress_Sampling';
+strain_node = strain_node'; % [¦Å_xx, ¦Å_yy, ¦Ã_xy]
+stress_node = stress_node'; % [¦Ò_xx, ¦Ò_yy, ¦Ó_xy]
+
+% If sample:
+strain_Sampling = strain_Sampling';
+stress_Sampling = stress_Sampling';
 
 X = msh.POS(:, 1); % Orignal X-coordinate of each node.
 Y = msh.POS(:, 2); % Orignal Y-coordinate of each node.
-% XX = zeros(msh.nbNod, 1);
-% YY = zeros(msh.nbNod, 1);
-% for nn = 1 : msh.nbNod
-%     XX(nn) = X(nn) + trial_solution(2*nn - 1); % X after the deformation.
-%     YY(nn) = Y(nn) + trial_solution(2*nn); % Y after the deformation.
-% end
-% XX_Sampling = X_Sampling + d_x_Sampling;
-% YY_Sampling = Y_Sampling + d_y_Sampling;
+XX = zeros(msh.nbNod, 1);
+YY = zeros(msh.nbNod, 1);
+for nn = 1 : msh.nbNod
+    XX(nn) = X(nn) + trial_solution(2*nn - 1); % X after the deformation.
+    YY(nn) = Y(nn) + trial_solution(2*nn); % Y after the deformation.
+end
 
-sigma_xx = stress(:, 1);
-% sigma_xx_Sampling = stress_Sampling(:, 1);
+sigma_xx = stress_node(:, 1);
 
-% % If sample in triangles: {
-% X = [X; X_Sampling];
-% Y = [Y; Y_Sampling];
-% sigma_xx = [sigma_xx; sigma_xx_Sampling];
-% % }
-
+% If sample in triangles: {
+X = [X; X_Sampling];
+Y = [Y; Y_Sampling];
+sigma_xx_Sampling = stress_Sampling(:, 1);
+sigma_xx = [sigma_xx; sigma_xx_Sampling];
+XX_Sampling = X_Sampling + d_x_Sampling;
+YY_Sampling = Y_Sampling + d_y_Sampling;
+% }
 max_sigma_xx = 0;
 for ii = 1 : length(sigma_xx)
     if sigma_xx(ii) > max_sigma_xx
@@ -403,6 +422,8 @@ TRI = alphaTriangulation(SHP);
 % Deformed = alphaShape(XX, YY, 0.8, 'HoleThreshold', 0.000001);
 % TRI_2 = alphaTriangulation(Deformed);
 
+MESH = alphaShape(msh.POS(:, 1), msh.POS(:, 2), 0.8, 'HoleThreshold', 0.000001);
+
 figure(1)
 patch('Faces', TRI, 'Vertices', [X, Y], 'facevertexCdata', sigma_xx, ...
     'edgecolor', 'none', 'facecolor', 'interp');
@@ -416,8 +437,8 @@ set(col1, 'Fontsize', 12)
 set(gcf, 'unit', 'centimeters', 'position', [3 20 20 17.5]);
 
 figure(2)
-plot(SHP);
-title('Nodes', 'fontsize', 16)
+plot(MESH);
+title('MESH', 'fontsize', 16)
 xlabel('X - axis (m)', 'fontsize', 13);
 ylabel('Y - axis (m)', 'fontsize', 13);
 axis([-4 0 0 4]);
