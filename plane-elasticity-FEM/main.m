@@ -160,7 +160,7 @@ for ee = 1 : msh.nbTriangles
         dN3_dy = TriangularBasis(3, 0, 1, qua_x, qua_y, phys2rst); 
 
         B_qua = [dN1_dx, 0, dN2_dx, 0, dN3_dx, 0;
-                 0, dN1_dy, 0, dN2_dy, 0, dN2_dy;
+                 0, dN1_dy, 0, dN2_dy, 0, dN3_dy;
                  dN1_dy, dN1_dx, dN2_dy, dN2_dx, dN3_dy, dN3_dx];
             
         k_ele = k_ele + J * wq(qua) * B_qua' * D * B_qua; 
@@ -284,17 +284,16 @@ nbSampling = 10; % The number of sampling points in each element.
     sampling_data(nbSampling, msh, Plane_IEN, element_type, trial_solution);
 % }
 
-X = X2; % 1:node / 2:sampling
-Y = Y2;
+X = X1; % 1:node / 2:sampling
+Y = Y1;
 
-sigma_xx = stress_2(:, 1); % 1:node / 2:sampling
-sigma_yy = stress_2(:, 2);
-tao_xy   = stress_2(:, 3);
+sigma_xx = stress_1(:, 1); % 1:node / 2:sampling
+sigma_yy = stress_1(:, 2);
+tao_xy   = stress_1(:, 3);
 
 max_sigma_xx = 0;
 max_sigma_yy = 0;
 max_tao_xy = 0;
-
 % Find the most dangerous points.
 for ii = 1 : length(X)
     if abs(sigma_xx(ii)) > max_sigma_xx
@@ -336,7 +335,7 @@ MESH = alphaShape(msh.POS(:, 1), msh.POS(:, 2), 0.8, 'HoleThreshold', 0.000001);
 
 figure(1)
 patch('Faces', TRI, 'Vertices', [X, Y], 'facevertexCdata', sigma_xx, ...
-    'edgecolor', 'none', 'facecolor', 'flat'); % 'flat'/'interp'
+    'edgecolor', 'none', 'facecolor', 'interp'); % 'flat'/'interp'
 title('¦Ò_x_x', 'fontsize', 16)
 xlabel('X - axis (m)', 'fontsize', 13);
 ylabel('Y - axis (m)', 'fontsize', 13);
@@ -348,7 +347,7 @@ set(gcf, 'unit', 'centimeters', 'position', [3 20 20 17.5]);
 
 figure(2)
 patch('Faces', TRI, 'Vertices', [X, Y], 'facevertexCdata', sigma_yy, ...
-    'edgecolor', 'none', 'facecolor', 'flat');
+    'edgecolor', 'none', 'facecolor', 'interp');
 title('¦Ò_y_y', 'fontsize', 16);
 xlabel('X - axis (m)', 'fontsize', 13);
 ylabel('Y - axis (m)', 'fontsize', 13);
@@ -360,7 +359,7 @@ set(gcf, 'unit', 'centimeters', 'position', [10 20 20 17.5]);
 
 figure(3)
 patch('Faces', TRI, 'Vertices', [X, Y], 'facevertexCdata', tao_xy, ...
-    'edgecolor', 'none', 'facecolor', 'flat');
+    'edgecolor', 'none', 'facecolor', 'interp');
 title('¦Ó_x_y', 'fontsize', 16);
 xlabel('X - axis (m)', 'fontsize', 13);
 ylabel('Y - axis (m)', 'fontsize', 13);
