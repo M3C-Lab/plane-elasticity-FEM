@@ -28,9 +28,9 @@ Neum_BC{2} = @(x, y) [0, 0]';
 Neum_BC{3} = @(x, y) [0, 0]';
 % Neumann boundary conditions as vector field functions in physical space.
 
-% Neum_BC{1} = @(x, y) 10;
-% Neum_BC{2} = @(x, y) 0;
-% Neum_BC{3} = @(x, y) 0;
+% Neum_BC{1} =  10;
+% Neum_BC{2} =  0;
+% Neum_BC{3} =  0;
 % Neumann boundary conditions as a constant scalar.
 
 f_x = @(x, y) 0 * x * y; % Body force field of x-component.
