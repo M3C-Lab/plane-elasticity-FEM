@@ -59,8 +59,8 @@ for ee = 1 : msh.nbElm - msh.nbLines
             dN2_dy = TriangularBasis(2, 0, 1, node_x, node_y, phys2rst);
             dN3_dy = TriangularBasis(3, 0, 1, node_x, node_y, phys2rst); 
             B_node = [dN1_dx, 0, dN2_dx, 0, dN3_dx, 0;
-                  0, dN1_dy, 0, dN2_dy, 0, dN2_dy;
-                  dN1_dy, dN1_dx, dN2_dy, dN2_dx, dN3_dy, dN3_dx];
+                      0, dN1_dy, 0, dN2_dy, 0, dN3_dy;
+                      dN1_dy, dN1_dx, dN2_dy, dN2_dx, dN3_dy, dN3_dx];
               
             epsilon_node = B_node * d_ele;
         
@@ -71,15 +71,6 @@ for ee = 1 : msh.nbElm - msh.nbLines
             strain_node(3, Plane_IEN(nn, ee)) = ...
                 strain_node(3, Plane_IEN(nn, ee)) + epsilon_node(3);
         
-            sigma_node = D * epsilon_node;
-        
-            stress_node(1, Plane_IEN(nn, ee)) = ...
-                stress_node(1, Plane_IEN(nn, ee)) + sigma_node(1);
-            stress_node(2, Plane_IEN(nn, ee)) = ...
-                stress_node(2, Plane_IEN(nn, ee)) + sigma_node(2);
-            stress_node(3, Plane_IEN(nn, ee)) = ...
-                stress_node(3, Plane_IEN(nn, ee)) + sigma_node(3);
-        
             counter_node(Plane_IEN(nn, ee)) = ...
                 counter_node(Plane_IEN(nn, ee)) + 1;
         end        
@@ -88,8 +79,9 @@ end
 
 for nn = 1 : msh.nbNod
     strain_node(:, nn) = strain_node(:, nn) ./ counter_node(nn);    
-    stress_node(:, nn) = stress_node(:, nn) ./ counter_node(nn);
 end
+
+stress_node = D * strain_node;
 
 % For using patch function conveniently.
 strain_node = strain_node';

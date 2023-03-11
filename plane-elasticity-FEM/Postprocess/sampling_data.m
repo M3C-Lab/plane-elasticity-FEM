@@ -68,8 +68,8 @@ for ee = 1 : msh.nbElm - msh.nbLines
             dN2_dy = TriangularBasis(2, 0, 1, samp_x, samp_y, phys2rst);
             dN3_dy = TriangularBasis(3, 0, 1, samp_x, samp_y, phys2rst); 
             B_samp = [dN1_dx, 0, dN2_dx, 0, dN3_dx, 0;
-                    0, dN1_dy, 0, dN2_dy, 0, dN2_dy;
-                    dN1_dy, dN1_dx, dN2_dy, dN2_dx, dN3_dy, dN3_dx];
+                      0, dN1_dy, 0, dN2_dy, 0, dN3_dy;
+                      dN1_dy, dN1_dx, dN2_dy, dN2_dx, dN3_dy, dN3_dx];
         
             epsilon_samp = B_samp * d_ele;
             strain_sampling(1, nbSampling*(ee-1) + temp) = epsilon_samp(1);
