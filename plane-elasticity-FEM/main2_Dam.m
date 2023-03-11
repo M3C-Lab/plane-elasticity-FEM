@@ -76,11 +76,11 @@ toc;
 % ---------- Construct stiffness K and load F ---------- 
 tic;
 disp('3) Construct stiffness K and load F');
-% The physical equations for plane strain/stress problem: ¶“ = D * ¶≈ .
-% ¶“ = [¶“_xx, ¶“_yy, ¶”_xy]'
-% ¶≈ = [¶≈_xx, ¶≈_yy, ¶√_xy]'
-% Note: ¶√_xy = 2 * ¶≈_xy
-% ¶≈_ij = 0.5 * (ui_xj + uj_xi)
+% The physical equations for plane strain/stress problem: œÉ = D * Œµ .
+% œÉ = [œÉ_xx, œÉ_yy, œÑ_xy]'
+% Œµ = [Œµ_xx, Œµ_yy, Œ≥_xy]'
+% Note: Œ≥_xy = 2 * Œµ_xy
+% Œµ_ij = 0.5 * (ui_xj + uj_xi)
 % This formulation are available on Page 83.
 lamda = nu * E / ((1 + nu) * (1 -2 * nu));
 mu = 0.5 * E / (1 + nu);
@@ -132,15 +132,15 @@ for ee = 1 : msh.nbTriangles
         
     % Construct k and f.
     for qua = 1 : nqp
-% The term in the weak form: ¶≈(w)' * D * ¶≈(u)
+% The term in the weak form: Œµ(w)' * D * Œµ(u)
 %        [d_dx, 0;
-% ¶≈(u) =  0, d_dy;      *   [u, v] = L * u
+% Œµ(u) =  0, d_dy;      *   [u, v] = L * u
 %        d_dy, d_dx]
 % u = [N1, 0, N2, 0, N3, 0;     *   [u1, v1, u2, v2, u3, v3]' = N * d
 %       0, N1, 0, N2, 0, N3]
 % B = L * N
-% ¶≈(w)' * D * ¶≈(u) = B' * D * B
-% º˚”⁄°∂”–œﬁµ•‘™∑®°∑µ⁄59°¢60“≥°£
+% Œµ(w)' * D * Œµ(u) = B' * D * B
+% ËßÅ‰∫é„ÄäÊúâÈôêÂçïÂÖÉÊ≥ï„ÄãÁ¨¨59„ÄÅ60È°µ„ÄÇ
 % If we use mapping from physical space to parametric space, we should
 %   consider the general differential relations,
 %   and Jacobian J should be multiplied with the infinitesimal volume for
@@ -178,7 +178,7 @@ for ee = 1 : msh.nbTriangles
 % % %     f_cell{ee} = f_ele;
         
     % f = f + Neumman BC        
-    for ii = 1 : 1
+    for ii = 1 : num_Neum
         for jj = 1 : size(Neum_IEN{ii}, 2)
             % Search for triangular elements adjoining  Neumann boundaries.
             if ee == Neum_IEN{ii}(3, jj)
@@ -310,11 +310,11 @@ for ii = 1 : length(X)
     end
 end
 disp('The Maximum stress:');
-fprintf('max_¶“xx = %f    at [%f, %f]\n', ...
+fprintf('max_œÉxx = %f    at [%f, %f]\n', ...
     max_sigma_xx, dangerous_point_xx(1), dangerous_point_xx(2));
-fprintf('max_¶“yy = %f    at [%f, %f]\n', ...
+fprintf('max_œÉyy = %f    at [%f, %f]\n', ...
     max_sigma_yy, dangerous_point_yy(1), dangerous_point_yy(2));
-fprintf('max_¶”xy = %f    at [%f, %f]\n', ...
+fprintf('max_œÑxy = %f    at [%f, %f]\n', ...
     max_tao_xy, dangerous_point_xy(1), dangerous_point_xy(2));
 toc;
 
@@ -334,7 +334,7 @@ MESH = alphaShape(msh.POS(:, 1), msh.POS(:, 2), 20, 'HoleThreshold', 0.000001);
 figure(1)
 patch('Faces', TRI, 'Vertices', [X, Y], 'facevertexCdata', sigma_xx, ...
     'edgecolor', 'none', 'facecolor', 'interp'); % 'flat'/'interp'
-title('¶“_x_x', 'fontsize', 16)
+title('œÉ_x_x', 'fontsize', 16)
 xlabel('X - axis (m)', 'fontsize', 13);
 ylabel('Y - axis (m)', 'fontsize', 13);
 colormap('jet');
@@ -346,7 +346,7 @@ set(gcf, 'unit', 'centimeters', 'position', [3 20 20 17.5]);
 figure(2)
 patch('Faces', TRI, 'Vertices', [X, Y], 'facevertexCdata', sigma_yy, ...
     'edgecolor', 'none', 'facecolor', 'interp');
-title('¶“_y_y', 'fontsize', 16);
+title('œÉ_y_y', 'fontsize', 16);
 xlabel('X - axis (m)', 'fontsize', 13);
 ylabel('Y - axis (m)', 'fontsize', 13);
 colormap('jet');
@@ -358,7 +358,7 @@ set(gcf, 'unit', 'centimeters', 'position', [10 20 20 17.5]);
 figure(3)
 patch('Faces', TRI, 'Vertices', [X, Y], 'facevertexCdata', tao_xy, ...
     'edgecolor', 'none', 'facecolor', 'interp');
-title('¶”_x_y', 'fontsize', 16);
+title('œÑ_x_y', 'fontsize', 16);
 xlabel('X - axis (m)', 'fontsize', 13);
 ylabel('Y - axis (m)', 'fontsize', 13);
 colormap('jet');
