@@ -7,12 +7,17 @@ disp('1) Data given');
 
 msh = load_gmsh2('example4-2.msh');
 
-E = 1.0e5;   % Young's modulus.
-nu = 0.3;   % Poisson's ratio.
+E  = 1.0e5;    % Young's modulus.
+nu = 3.0e-1;   % Poisson's ratio.
 
+%%%%% This variable name is too long. Consider a shorter one.
+%%%%% Move the definition of D to a separate function, allowing future
+%%%%% addition of new models.
 plane_strain_or_plane_stress = 0; 
 % 0:plane strain problem / 1:plane stress problem
 
+%%%%% Diri ----> Dir
+%%%%% Neum ----> Neu
 num_Diri = 2; % The number of Dirichlet boundaries.
 Diri_BC = cell(2, 1);
 
@@ -44,6 +49,9 @@ toc;
 tic;
 disp('2) Preprocess');
 
+%%%%% IEN_v = gen_IEN_v
+%%%%% IEN_s = gen_IEN_s / get_IEN_s
+%%%%% Consider make a separate preprocess code
 Plane_IEN = make_Plane_IEN(msh, element_type);
 Neum_IEN = make_Neum_IEN_tri(msh, num_Diri, num_Neum, Plane_IEN);
 ID_array = make_ID_array(msh.nbNod);
@@ -123,6 +131,7 @@ for ee = 1 : msh.nbTriangles
     k_ele = zeros(dof_e, dof_e);
     f_ele = zeros(dof_e, 1);
         
+    %%%%% Write a local assembly code
     % The position of the nodes of an element in the physical space.
     p1 = [msh.POS(Plane_IEN(1, ee), 1), msh.POS(Plane_IEN(1, ee), 2)]';
     p2 = [msh.POS(Plane_IEN(2, ee), 1), msh.POS(Plane_IEN(2, ee), 2)]';
@@ -273,6 +282,8 @@ for nn = 1 : msh.nbNod
 end
 toc;
 
+%%%%% Save the solution to disk and write a separate postprocess code
+
 % ---------- Postprocess ----------
 tic;
 disp('5) Postprocess');
@@ -385,7 +396,4 @@ set(gcf, 'unit', 'centimeters', 'position', [24 20 20 17.5]);
 toc;
 disp('Done!');
 
-
-
-
-
+% EOF
